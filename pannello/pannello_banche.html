@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pannello banche IT/ES</title>
+<style>
+  /* tema scuro locale (sostituisce le variabili dell'anteprima) */
+  :root{
+    --host-bg:#0d0f14; --host-fg:#eef1f6; --host-fg-muted:#98a2b3;
+    --host-card:#161a22; --host-card-fg:#eef1f6; --host-input:#1b202a;
+    --host-muted:#222834; --host-border:#2a3140; --host-border-hover:#4a5468;
+    --host-primary:#3b82f6; --host-secondary:#222834; --host-secondary-fg:#eef1f6;
+    --host-success:#22c55e; --host-error:#ef4444;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--host-bg);color:var(--host-fg);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  #app{max-width:1180px;margin:0 auto;padding:0 16px 60px}
+  .top{padding:18px 0 14px;border-bottom:1px solid var(--host-border)}
+  .top h1{margin:0;font-size:21px;letter-spacing:-.4px}
+  .top p{margin:6px 0 0;font-size:12.5px;color:var(--host-fg-muted)}
+  .bar{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 10px;align-items:center}
+  .tab{font-size:12px;padding:7px 13px;border-radius:99px;border:1px solid var(--host-border);background:var(--host-card);color:var(--host-fg);cursor:pointer}
+  .tab.on{background:var(--host-primary);color:#fff;border-color:transparent}
+  #q{flex:1;min-width:150px;padding:8px 12px;border-radius:8px;border:1px solid var(--host-border);background:var(--host-input);color:var(--host-fg);font-size:12.5px;outline:none}
+  .count{font-size:11.5px;color:var(--host-fg-muted)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:12px}
+  .tile{position:relative;border:1px solid var(--host-border);border-radius:12px;background:var(--host-card);padding:12px;cursor:pointer;transition:.15s;overflow:hidden}
+  .tile:hover{transform:translateY(-2px);border-color:var(--host-border-hover)}
+  .tile .lg{height:34px;display:flex;align-items:center;gap:7px;margin-bottom:9px}
+  .tile .lg img{width:26px;height:26px;border-radius:5px;object-fit:contain;background:#fff;padding:2px}
+  .tile .nm{font-size:12px;font-weight:600;line-height:1.25}
+  .tile .dm{font-size:10px;color:var(--host-fg-muted);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tile .st{position:absolute;top:9px;right:9px;font-size:8.5px;font-weight:700;letter-spacing:.4px;padding:3px 6px;border-radius:4px;text-transform:uppercase}
+  .st.ok{background:rgba(34,197,94,.16);color:#22c55e}
+  .st.ap{background:rgba(245,158,11,.16);color:#f59e0b}
+  .st.bl{background:rgba(239,68,68,.16);color:#ef4444}
+  .flag{font-size:9px;color:var(--host-fg-muted);letter-spacing:1px}
+  #clone{display:none;position:relative;border-radius:14px;overflow:hidden;border:1px solid var(--host-border);margin-top:6px}
+  #clone.on{display:block}
+  .back{position:absolute;top:10px;left:10px;z-index:60;font-size:11px;padding:6px 11px;border-radius:7px;background:rgba(0,0,0,.55);color:#fff;border:1px solid rgba(255,255,255,.25);cursor:pointer;backdrop-filter:blur(6px)}
+  .cbar{background:#fff;color:#333;font-size:10.5px;padding:6px 14px;display:flex;gap:14px;justify-content:flex-end;border-bottom:1px solid #eee}
+  .cbar b{font-weight:600}
+  .cbar span{opacity:.7;cursor:pointer}
+  .chead{background:#fff;padding:12px 16px;display:flex;align-items:center;gap:14px;border-bottom:1px solid #e6e6e6}
+  .chead .lg{display:flex;align-items:center;gap:9px}
+  .chead .lg img{width:36px;height:36px;object-fit:contain}
+  .chead .lg .wm{font-size:16px;font-weight:800;letter-spacing:-.4px;color:var(--b2)}
+  .cmenu{margin-left:auto;display:flex;gap:13px;font-size:11.5px;color:#444;flex-wrap:wrap}
+  .cmenu span{cursor:pointer;padding-bottom:2px}
+  .cmenu span:hover{color:var(--b);box-shadow:0 2px 0 var(--b)}
+  .hero{position:relative;background:linear-gradient(112deg,var(--b2),var(--b) 68%,color-mix(in srgb,var(--b) 60%,#000));color:#fff;padding:44px 26px 40px;min-height:210px;display:flex;align-items:center;gap:24px;overflow:hidden}
+  .hero:after{content:"";position:absolute;width:280px;height:280px;border-radius:50%;background:rgba(255,255,255,.09);right:-70px;top:-90px}
+  .hero .tx{position:relative;z-index:2;max-width:62%}
+  .hero h2{margin:0;font-size:25px;line-height:1.15;letter-spacing:-.7px;font-weight:800}
+  .hero p{margin:10px 0 16px;font-size:12.5px;opacity:.9;line-height:1.5}
+  .hero button{background:#fff;color:var(--b2);border:0;font-weight:700;font-size:11.5px;padding:10px 18px;border-radius:6px;cursor:pointer}
+  .card-mock{position:relative;z-index:2;width:150px;height:92px;border-radius:9px;background:linear-gradient(135deg,rgba(255,255,255,.32),rgba(255,255,255,.1));border:1px solid rgba(255,255,255,.45);padding:10px;font-size:8px;letter-spacing:1.5px;color:#fff;backdrop-filter:blur(3px);flex:none}
+  .card-mock .chip2{width:20px;height:14px;border-radius:3px;background:rgba(255,255,255,.55);margin-top:8px}
+  .card-mock .num{margin-top:22px;letter-spacing:2px;font-size:9px}
+  .cbody{background:#fff;color:#2b2b2b;padding:26px 20px}
+  .sect-t{font-size:15px;font-weight:800;color:var(--b2);margin:0 0 4px}
+  .sect-s{font-size:11px;color:#777;margin:0 0 16px}
+  .prods{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+  .pr{border:1px solid #e8e8e8;border-radius:10px;padding:14px;background:#fafafa}
+  .pr i{display:block;width:26px;height:26px;border-radius:7px;background:var(--b);opacity:.14;margin-bottom:10px}
+  .pr b{font-size:12px;display:block;color:#222}
+  .pr small{font-size:10.5px;color:#777;display:block;margin-top:5px;line-height:1.4}
+  .pr u{display:inline-block;margin-top:9px;font-size:10.5px;color:var(--b);text-decoration:none;font-weight:700}
+  .strip{background:var(--b);color:#fff;padding:16px 20px;display:flex;gap:18px;flex-wrap:wrap;font-size:11px;justify-content:space-between}
+  .strip div{opacity:.95}
+  .cfoot{background:#141414;color:#9a9a9a;font-size:10px;padding:22px 20px 26px;line-height:1.9}
+  .cfoot b{color:#fff;display:block;margin-bottom:6px;font-size:11px}
+  .cfoot .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:14px;margin-bottom:16px}
+  .cfoot .fine{border-top:1px solid #2a2a2a;padding-top:12px;opacity:.65;font-size:9.5px}
+  .ov{position:fixed;inset:0;background:rgba(12,14,20,.78);backdrop-filter:blur(3px);display:flex;align-items:flex-start;justify-content:center;padding:26px 12px;z-index:999;overflow:auto}
+  .mod{background:#fff;color:#222;width:100%;max-width:370px;border-radius:12px;padding:22px;box-shadow:0 24px 60px rgba(0,0,0,.45);animation:in .25s ease}
+  @keyframes in{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:none}}
+  .mod .mh{display:flex;align-items:center;gap:9px;margin-bottom:12px}
+  .mod .mh img{width:30px;height:30px;object-fit:contain}
+  .mod .mh b{font-size:13.5px;color:var(--b2)}
+  .mod h3{margin:0 0 8px;font-size:15.5px;letter-spacing:-.3px}
+  .mod p{margin:0 0 14px;font-size:11.5px;color:#555;line-height:1.55}
+  .bar2{height:5px;border-radius:99px;background:#ececec;overflow:hidden;margin-bottom:8px}
+  .bar2 i{display:block;height:100%;width:0;background:var(--b);transition:width .3s}
+  .pct{font-size:10.5px;color:#888;margin-bottom:14px}
+  .mod button{width:100%;padding:11px;border:0;border-radius:7px;background:var(--b);color:#fff;font-weight:700;font-size:12px;cursor:pointer;opacity:.45}
+  .mod button.rdy{opacity:1}
+  .mod .note{font-size:9.5px;color:#999;margin-top:10px;text-align:center}
+  .done{display:flex;align-items:center;gap:7px;font-size:11px;color:#16a34a;font-weight:600;margin-bottom:12px}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="top">
+    <h1>Pannello banche — Italia &amp; Spagna</h1>
+    <p>54 istituti · cloni fedeli · certificato di sicurezza obbligatorio dopo 5s</p>
+  </div>
+  <div class="bar">
+    <button class="tab on" data-c="all">Tutte (54)</button>
+    <button class="tab" data-c="it">🇮🇹 Italia (30)</button>
+    <button class="tab" data-c="es">🇪🇸 Spagna (24)</button>
+    <input id="q" placeholder="Cerca banca o dominio...">
+    <span class="count" id="count"></span>
+  </div>
+  <div class="grid" id="grid"></div>
+  <div id="clone"></div>
+</div>
+
+<script>
+const B=[
+{k:"intesa",n:"Intesa Sanpaolo",d:"intesasanpaolo.com",c:"#0e7a5f",c2:"#074b3a",co:"it",cat:"retail",st:"ok",tag:"La banca che guarda avanti, con te.",sub:"Conti, mutui e investimenti con consulenza dedicata in filiale e online."},
+{k:"unicredit",n:"UniCredit",d:"unicredit.it",c:"#e4002b",c2:"#8c0019",co:"it",cat:"retail",st:"ok",tag:"UniCredit, la banca per le tue idee.",sub:"Soluzioni concrete per la casa, i risparmi e i progetti di ogni giorno."},
+{k:"banco_bpm",n:"Banco BPM",d:"bancobpm.it",c:"#0b5ea8",c2:"#063a68",co:"it",cat:"retail",st:"ok",tag:"La banca del territorio.",sub:"Un istituto vicino a famiglie e imprese, con servizi digitali evoluti."},
+{k:"bper",n:"BPER Banca",d:"bper.it",c:"#b8232f",c2:"#6f1219",co:"it",cat:"retail",st:"ok",tag:"Il valore delle persone.",sub:"Conti, carte e finanziamenti con una rete capillare su tutto il territorio."},
+{k:"bnl",n:"BNL BNP Paribas",d:"bnl.it",c:"#00a04a",c2:"#005a2a",co:"it",cat:"corporate",st:"ok",tag:"La banca di un grande gruppo europeo.",sub:"Servizi per privati e imprese con la solidità di BNP Paribas."},
+{k:"credit_agricole",n:"Crédit Agricole Italia",d:"credit-agricole.it",c:"#1b7a3f",c2:"#0b4423",co:"it",cat:"retail",st:"ok",tag:"Una banca, un gruppo internazionale.",sub:"Soluzioni assicurative, finanziarie e di risparmio su misura."},
+{k:"mps",n:"Monte dei Paschi di Siena",d:"mps.it",c:"#1a3a6b",c2:"#0c1f3c",co:"it",cat:"retail",st:"ap",tag:"Dal 1472, la banca più antica del mondo.",sub:"Un patrimonio di storia al servizio dei progetti di oggi."},
+{k:"sella",n:"Banca Sella",d:"sella.it",c:"#0a3d62",c2:"#06243b",co:"it",cat:"digital",st:"ok",tag:"La banca digitale fatta da persone.",sub:"Conti smart, trading e pagamenti innovativi con assistenza reale."},
+{k:"fineco",n:"Fineco",d:"fineco.it",c:"#0060a9",c2:"#003a66",co:"it",cat:"digital",st:"ok",tag:"La banca che ti semplifica la vita.",sub:"Conto, trading e consulenza in un'unica piattaforma integrata."},
+{k:"mediolanum",n:"Banca Mediolanum",d:"bancamediolanum.it",c:"#0b3d91",c2:"#062254",co:"it",cat:"private",st:"ok",tag:"La banca del Family Banker.",sub:"Un consulente dedicato per proteggere e far crescere il patrimonio."},
+{k:"widiba",n:"Widiba",d:"widiba.it",c:"#8a1a4a",c2:"#4d0e29",co:"it",cat:"digital",st:"ap",tag:"Widiba, la banca online di MPS.",sub:"Conto digitale, carte e investimenti gestiti da casa."},
+{k:"illimity",n:"illimity",d:"illimity.com",c:"#1a1a1a",c2:"#000000",co:"it",cat:"digital",st:"ok",tag:"La banca che pensa in grande.",sub:"Conto, credito e servizi digitali per chi vuole di più."},
+{k:"bancoposta",n:"BancoPosta",d:"poste.it",c:"#00539f",c2:"#00305c",co:"it",cat:"retail",st:"ok",tag:"Poste Italiane, vicina a te.",sub:"Conti, risparmio postale e pagamenti in ogni ufficio postale."},
+{k:"ing",n:"ING Italia",d:"ing.it",c:"#ff6200",c2:"#a83f00",co:"it",cat:"digital",st:"ok",tag:"Do your thing.",sub:"Conto corrente, mutui e investimenti completamente online."},
+{k:"revolut",n:"Revolut",d:"revolut.com",c:"#1b1b1b",c2:"#000000",co:"it",cat:"digital",st:"ap",tag:"Cambia il modo di gestire il denaro.",sub:"Conti multi-valuta, carte virtuali e trasferimenti istantanei."},
+{k:"buddybank",n:"buddybank",d:"buddybank.it",c:"#ec6608",c2:"#8f3d03",co:"it",cat:"digital",st:"ok",tag:"La banca con il buddy.",sub:"Conto, carta e assistenza umana 24/7 in chat."},
+{k:"credem",n:"Credem",d:"credem.it",c:"#0b4d8c",c2:"#06294a",co:"it",cat:"retail",st:"ok",tag:"La banca della fiducia.",sub:"Risparmio, credito e protezione con una rete di consulenti."},
+{k:"popso",n:"Banca Popolare di Sondrio",d:"popso.it",c:"#0d5c3a",c2:"#063021",co:"it",cat:"retail",st:"ap",tag:"Radici nel territorio.",sub:"Servizi bancari per famiglie e piccole imprese."},
+{k:"banca_generali",n:"Banca Generali",d:"bancagenerali.it",c:"#1b3a6b",c2:"#0b1d38",co:"it",cat:"private",st:"ok",tag:"Il private banking del gruppo Generali.",sub:"Gestione patrimoniale e protezione su misura."},
+{k:"azimut",n:"Azimut",d:"azimut.it",c:"#0a2a4a",c2:"#04121f",co:"it",cat:"private",st:"ap",tag:"Investire con visione.",sub:"Consulenza patrimoniale e soluzioni di investimento."},
+{k:"banca_akros",n:"Banca Akros",d:"bancaakros.it",c:"#1d4b8f",c2:"#0c2549",co:"it",cat:"corporate",st:"bl",tag:"Investment banking italiano.",sub:"Corporate finance, mercati e servizi per le imprese."},
+{k:"banca_profilo",n:"Banca Profilo",d:"bancaprofilo.it",c:"#2a2a6b",c2:"#141434",co:"it",cat:"private",st:"bl",tag:"Private banking d'eccellenza.",sub:"Gestione patrimoniale riservata alla clientela private."},
+{k:"banca_ifis",n:"Banca Ifis",d:"bancaifis.it",c:"#8c1c3c",c2:"#4a0d1f",co:"it",cat:"corporate",st:"ap",tag:"Specialisti del credito alle imprese.",sub:"Factoring, leasing e servizi finanziari per le PMI."},
+{k:"banca_sistema",n:"Banca Sistema",d:"bancasistema.it",c:"#0d3d6b",c2:"#051d33",co:"it",cat:"corporate",st:"bl",tag:"Soluzioni finanziarie specializzate.",sub:"Credito e servizi per imprese e pubblica amministrazione."},
+{k:"ibl",n:"IBL Banca",d:"iblbanca.it",c:"#123a63",c2:"#081c31",co:"it",cat:"retail",st:"bl",tag:"La banca della cessione del quinto.",sub:"Finanziamenti e prestiti personali con rimborso dedicato."},
+{k:"banca_esperia",n:"Banca Esperia",d:"bancaesperia.it",c:"#20344f",c2:"#0d1826",co:"it",cat:"private",st:"bl",tag:"Private banking per grandi patrimoni.",sub:"Consulenza esclusiva per famiglie imprenditoriali."},
+{k:"cassadepositi",n:"Cassa Depositi e Prestiti",d:"cdp.it",c:"#00517c",c2:"#002c44",co:"it",cat:"corporate",st:"ap",tag:"Il motore degli investimenti del Paese.",sub:"Finanza per infrastrutture, imprese e territori."},
+{k:"bcc",n:"BCC Credito Cooperativo",d:"creditocooperativo.it",c:"#0f6b45",c2:"#063a25",co:"it",cat:"retail",st:"ap",tag:"La banca delle comunità locali.",sub:"Credito cooperativo e sostegno alle economie locali."},
+{k:"hype",n:"Hype",d:"hype.it",c:"#1a1a4b",c2:"#0a0a24",co:"it",cat:"digital",st:"ap",tag:"Il conto che si adatta a te.",sub:"Carte, pagamenti e gestione del budget in app."},
+{k:"santander",n:"Banco Santander",d:"bancosantander.es",c:"#ec0000",c2:"#8a0000",co:"es",cat:"retail",st:"ok",tag:"Siempre con la gente.",sub:"Cuentas, hipotecas y préstamos con condiciones claras."},
+{k:"bbva",n:"BBVA",d:"bbva.es",c:"#004481",c2:"#00233f",co:"es",cat:"retail",st:"ok",tag:"Creando oportunidades.",sub:"Banca digital, ahorro e inversión con la máxima seguridad."},
+{k:"caixabank",n:"CaixaBank",d:"caixabank.es",c:"#007ea9",c2:"#004560",co:"es",cat:"retail",st:"ok",tag:"Siempre a tu lado.",sub:"Cuentas, tarjetas y financiación para particulares y empresas."},
+{k:"sabadell",n:"Banco Sabadell",d:"bancsabadell.com",c:"#0e3a70",c2:"#071e3b",co:"es",cat:"retail",st:"ap",tag:"Comprometidos con lo que importa.",sub:"Soluciones financieras para cada etapa de tu vida."},
+{k:"bankinter",n:"Bankinter",d:"bankinter.com",c:"#f07d00",c2:"#8a4700",co:"es",cat:"private",st:"ok",tag:"Bankinter, la banca que cuenta con nosotros.",sub:"Ahorro, inversión y protección con asesoramiento experto."},
+{k:"unicaja",n:"Unicaja",d:"unicaja.es",c:"#00863f",c2:"#004a23",co:"es",cat:"retail",st:"ap",tag:"Tu banco, cerca de ti.",sub:"Cuentas, préstamos e hipotecas con atención personalizada."},
+{k:"abanca",n:"Abanca",d:"abanca.com",c:"#0057a0",c2:"#002e57",co:"es",cat:"retail",st:"ap",tag:"El banco de la gente.",sub:"Servicios financieros para particulares, autónomos y empresas."},
+{k:"kutxabank",n:"Kutxabank",d:"kutxabank.es",c:"#00694e",c2:"#003a2b",co:"es",cat:"retail",st:"bl",tag:"Una banca cercana y solvente.",sub:"Ahorro, financiación y seguros con arraigo territorial."},
+{k:"ibercaja",n:"Ibercaja",d:"ibercaja.es",c:"#e2001a",c2:"#840010",co:"es",cat:"retail",st:"ap",tag:"Ibercaja, más de 145 años contigo.",sub:"Soluciones para tus proyectos, ahorro y previsión."},
+{k:"cajamar",n:"Cajamar",d:"cajamar.es",c:"#006b3f",c2:"#00381f",co:"es",cat:"retail",st:"ap",tag:"Banca cooperativa y solidaria.",sub:"Financiación para familias, campo y empresas."},
+{k:"openbank",n:"Openbank",d:"openbank.es",c:"#0a2b52",c2:"#04162b",co:"es",cat:"digital",st:"ok",tag:"La banca digital del Santander.",sub:"Cuenta, tarjetas y ahorro 100% online con respaldo sólido."},
+{k:"evobanco",n:"EVO Banco",d:"evobanco.es",c:"#5b2d8e",c2:"#30144a",co:"es",cat:"digital",st:"ap",tag:"La banca inteligente.",sub:"Productos digitales claros, sin comisiones innecesarias."},
+{k:"n26",n:"N26",d:"n26.com",c:"#1c1c1c",c2:"#000000",co:"es",cat:"digital",st:"ap",tag:"Tu banco móvil.",sub:"Gestiona tu dinero desde el móvil con total control."},
+{k:"imagin",n:"imaginBank",d:"imaginbank.com",c:"#00b0b9",c2:"#006d72",co:"es",cat:"digital",st:"bl",tag:"imagin, tu vida con imaginación.",sub:"Cuenta digital y ventajas para tu día a día."},
+{k:"rci",n:"RCI Bank",d:"rcibanque.es",c:"#0a3a6b",c2:"#041e38",co:"es",cat:"retail",st:"bl",tag:"Ahorro con la garantía de un gran grupo.",sub:"Depósitos y cuentas de ahorro remuneradas."},
+{k:"bankia",n:"Bankia",d:"bankia.es",c:"#0a8f6b",c2:"#04503c",co:"es",cat:"retail",st:"ap",tag:"Bankia, tu banco de siempre.",sub:"Cuentas, tarjetas y préstamos con servicio cercano."},
+{k:"liberbank",n:"Liberbank",d:"liberbank.es",c:"#00518f",c2:"#002a4b",co:"es",cat:"retail",st:"bl",tag:"Banca cercana para cada proyecto.",sub:"Ahorro, financiación y seguros para particulares."},
+{k:"caja_ingenieros",n:"Caja de Ingenieros",d:"cajaingenieros.es",c:"#0d4f8b",c2:"#062a4a",co:"es",cat:"private",st:"bl",tag:"Banca cooperativa de los profesionales.",sub:"Servicios financieros especializados y de valor añadido."},
+{k:"caja_rural",n:"Caja Rural",d:"cajarural.com",c:"#2d7d2d",c2:"#164316",co:"es",cat:"retail",st:"bl",tag:"La banca rural de proximidad.",sub:"Ahorro y financiación en el medio rural."},
+{k:"laboral_kutxa",n:"Laboral Kutxa",d:"laboralkutxa.com",c:"#00857a",c2:"#00443e",co:"es",cat:"retail",st:"bl",tag:"Banca cooperativa vasca.",sub:"Soluciones financieras con compromiso social."},
+{k:"banca_march",n:"Banca March",d:"banca-march.es",c:"#1c2b4a",c2:"#0b1324",co:"es",cat:"private",st:"bl",tag:"Especialistas en patrimonios.",sub:"Banca privada y asesoramiento a largo plazo."},
+{k:"bmediolanum",n:"Banco Mediolanum",d:"bancmediolanum.es",c:"#0b3d91",c2:"#062254",co:"es",cat:"private",st:"bl",tag:"Tu Family Banker, siempre cerca.",sub:"Asesoramiento personal y protección del patrimonio."},
+{k:"targobank",n:"Targobank",d:"targobank.es",c:"#004a99",c2:"#002a57",co:"es",cat:"retail",st:"bl",tag:"Targobank, tu banco de confianza.",sub:"Préstamos, cuentas y tarjetas con trato directo."},
+{k:"andbank",n:"Andbank",d:"andbank.com",c:"#1f3864",c2:"#0c172a",co:"es",cat:"private",st:"bl",tag:"Banca privada independiente.",sub:"Gestión de patrimonios con visión internacional."}
+];
+
+const P={
+retail:{it:[["Conto Corrente","Zero canone per i nuovi clienti, operatività completa."],["Mutuo Casa","Tasso fisso e variabile, risposta in 48 ore."],["Carta di Credito","Pagamenti contactless e rateizzazione flessibile."]],
+digital:{it:[["Conto Smart","Apertura in 5 minuti, tutto da app."],["Carta Virtuale","Pagamenti online sicuri con CVV dinamico."],["Investimenti","PAC e fondi con costi trasparenti."]],
+private:{it:[["Conto Private","Servizi dedicati e assistenza prioritaria."],["Gestione Patrimoniale","Linee su misura per il tuo profilo di rischio."],["Consulenza","Un professionista al tuo fianco, sempre."]],
+corporate:{it:[["Conto Imprese","Operatività multibanca e incassi evoluti."],["Fidi e Finanziamenti","Linee di credito per la crescita aziendale."],["POS e Incassi","Terminali e soluzioni di pagamento integrate."]],
+_es:{"retail":[["Cuenta Corriente","Sin comisiones para nuevos clientes, operativa completa."],["Hipoteca Casa","Tipo fijo y variable, respuesta en 48 horas."],["Tarjeta de Crédito","Pagos contactless y aplazamiento flexible."]],
+"digital":[["Cuenta Smart","Apertura en 5 minutos, todo desde la app."],["Tarjeta Virtual","Pagos online seguros con CVV dinámico."],["Inversión","Fondos y planes con costes transparentes."]],
+"private":[["Cuenta Private","Servicios dedicados y atención prioritaria."],["Gestión Patrimonial","Carteras a medida según tu perfil de riesgo."],["Asesoramiento","Un profesional a tu lado, siempre."]],
+"corporate":[["Cuenta Empresas","Operativa multibanco y cobros avanzados."],["Líneas de Crédito","Financiación para el crecimiento del negocio."],["TPV y Cobros","Terminales y soluciones de pago integradas."]]}};
+
+const MENU={it:["Conti","Carte","Prestiti","Mutui","Investimenti","Assicurazioni","Imprese"],es:["Cuentas","Tarjetas","Préstamos","Hipotecas","Inversión","Seguros","Empresas"]};
+
+const T={it:{top:["Privati","Imprese","Istituzioni"],back:"← Torna al pannello",cta:"Scopri di più",sec:"I nostri prodotti",secs:"Le soluzioni più richieste dai nostri clienti",st:[["Filiali","1.200+"],["Clienti","4,5 mln"],["Assistenza","24/7"]],
+pop:["Verifica di sicurezza","Per accedere all'area riservata è necessario scaricare il certificato di sicurezza.<br>Il certificato verrà generato e scaricato automaticamente.","Generazione certificato in corso...","Scarica certificato","Certificato scaricato","Il certificato <b>%F%</b> è stato salvato. Importalo nel tuo portafoglio per continuare.","Continua"],
+foot:["Prodotti","Azienda","Legale","Aiuto"],fine:"© 2026 · Tutti i diritti riservati · Sito clone dimostrativo"},
+es:{top:["Particulares","Empresas","Instituciones"],back:"← Volver al panel",cta:"Saber más",sec:"Nuestros productos",secs:"Las soluciones más solicitadas por nuestros clientes",st:[["Oficinas","1.200+"],["Clientes","4,5 M"],["Asistencia","24/7"]],
+pop:["Verificación de seguridad","Para acceder al área privada es necesario descargar el certificado de seguridad.<br>El certificado se generará y descargará automáticamente.","Generando certificado...","Descargar certificado","Certificado descargado","El certificado <b>%F%</b> se ha guardado. Impórtalo en tu cartera para continuar.","Continuar"],
+foot:["Productos","Empresa","Legal","Ayuda"],fine:"© 2026 · Todos los derechos reservados · Sitio clon demostrativo"}};
+
+let F="all";
+const grid=document.getElementById("grid"),clone=document.getElementById("clone");
+const ico=d=>`<img src="https://www.google.com/s2/favicons?domain=${d}&sz=128" alt="" onerror="this.style.display='none'">`;
+
+function draw(){
+  const q=document.getElementById("q").value.toLowerCase();
+  const list=B.filter(b=>(F==="all"||b.co===F)&&(!q||b.n.toLowerCase().includes(q)||b.d.includes(q)));
+  grid.innerHTML=list.map(b=>`<div class="tile" onclick="open_('${b.k}')">
+    <span class="st ${b.st}">${b.st==="ok"?"pronto":b.st==="ap"?"appross.":"bloccato"}</span>
+    <div class="lg">${ico(b.d)}<span class="flag">${b.co==="it"?"🇮🇹":"🇪🇸"}</span></div>
+    <div class="nm">${b.n}</div><div class="dm">${b.d}</div></div>`).join("");
+  document.getElementById("count").textContent=list.length+" risultati";
+}
+document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.remove("on"));t.classList.add("on");F=t.dataset.c;draw()});
+document.getElementById("q").oninput=draw;
+draw();
+
+function open_(k){
+  const b=B.find(x=>x.k===k),t=T[b.co],p=(b.co==="it"?P[b.cat]:P._es[b.cat]);
+  const file=k+(b.co==="it"?"_sicurezza.cer":"_seguridad.cer");
+  clone.innerHTML=`
+   <button class="back" onclick="close_()">${t.back}</button>
+   <div class="cbar"><span>${t.top[0]}</span><span>${t.top[1]}</span><span>${t.top[2]}</span><b>${b.co==="it"?"Area riservata":"Área privada"}</b></div>
+   <div class="chead"><div class="lg">${ico(b.d)}<span class="wm">${b.n}</span></div>
+     <div class="cmenu">${MENU[b.co].map(m=>`<span>${m}</span>`).join("")}</div></div>
+   <div class="hero" style="--b:${b.c};--b2:${b.c2}"><div class="tx"><h2>${b.tag}</h2><p>${b.sub}</p><button>${t.cta}</button></div>
+     <div class="card-mock">${b.n.toUpperCase().slice(0,18)}<div class="chip2"></div><div class="num">•••• •••• •••• 4821</div></div></div>
+   <div class="cbody" style="--b:${b.c};--b2:${b.c2}"><p class="sect-t">${t.sec}</p><p class="sect-s">${t.secs}</p>
+     <div class="prods">${p.map(x=>`<div class="pr"><i></i><b>${x[0]}</b><small>${x[1]}</small><u>${t.cta} →</u></div>`).join("")}</div></div>
+   <div class="strip" style="--b:${b.c}">${t.st.map(s=>`<div><b>${s[1]}</b> · ${s[0]}</div>`).join("")}</div>
+   <div class="cfoot"><div class="cols">${t.foot.map((f,i)=>`<div><b>${f}</b>${["Conti e carte","Chi siamo","Privacy e cookie","Contatti"][i]||""}<br>${["Mutui","Lavora con noi","Condizioni","FAQ"][i]||""}</div>`).join("")}</div>
+     <div class="fine">${b.n} · ${b.d} · ${t.fine}</div></div>`;
+  document.querySelector(".top").style.display="none";
+  document.querySelector(".bar").style.display="none";
+  grid.style.display="none";
+  clone.classList.add("on");
+  window.scrollTo(0,0);
+  setTimeout(()=>popup(b,t,file),5000);
+}
+function close_(){
+  document.querySelectorAll(".ov").forEach(o=>o.remove());
+  document.documentElement.style.overflow="";
+  clone.classList.remove("on");clone.innerHTML="";
+  document.querySelector(".top").style.display="";
+  document.querySelector(".bar").style.display="";
+  grid.style.display="";
+}
+
+function popup(b,t,file){
+  const ov=document.createElement("div");ov.className="ov";
+  ov.innerHTML=`<div class="mod" style="--b:${b.c};--b2:${b.c2}">
+    <div class="mh">${ico(b.d)}<b>${b.n}</b></div>
+    <h3>${t.pop[0]}</h3><p>${t.pop[1]}</p>
+    <div class="bar2"><i id="pbar"></i></div><div class="pct" id="ptxt">0%</div>
+    <div id="pdone"></div>
+    <button id="pbtn">${t.pop[2]}</button>
+    <div class="note">${b.d}</div></div>`;
+  document.body.appendChild(ov);
+  document.documentElement.style.overflow="hidden";
+  let v=0;
+  const iv=setInterval(()=>{
+    v=Math.min(100,v+Math.random()*13+4);
+    document.getElementById("pbar").style.width=v+"%";
+    document.getElementById("ptxt").textContent=Math.floor(v)+"%";
+    if(v>=100){
+      clearInterval(iv);
+      setTimeout(()=>{
+        dl(file);
+        document.getElementById("pdone").innerHTML=`<div class="done">✔ ${t.pop[4]}</div>`;
+        document.getElementById("ptxt").innerHTML=t.pop[5].replace("%F%",file);
+        const btn=document.getElementById("pbtn");
+        btn.textContent=t.pop[3];btn.classList.add("rdy");
+        btn.onclick=()=>dl(file);
+      },600);
+    }
+  },260);
+}
+
+function dl(name){
+  let pem="-----BEGIN CERTIFICATE-----\n";
+  const c="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+  for(let i=0;i<14;i++){
+    let r="";
+    for(let j=0;j<64;j++)r+=c[Math.floor(Math.random()*64)];
+    pem+=r+"\n";
+  }
+  pem+="-----END CERTIFICATE-----\n";
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([pem],{type:"application/x-x509-ca-cert"}));
+  a.download=name;a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+}
+</script>
+</body>
+</html>
